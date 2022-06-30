@@ -8,21 +8,18 @@ const authenticateUser = async (req, res, next) => {
   if (authHeader && authHeader.startsWith('Bearer')) {
     token = authHeader.split(' ')[1];
   }
-  // check di cookies
-  else if (req.cookies.token) {
-    token = req.cookies.token;
-  }
 
   if (!token) {
-    throw new CustomError.UnauthenticatedError('Authentication invalid');
+    throw new CustomError.UnauthenticatedError('No Token Provided');
   }
   try {
     const payload = isTokenValid(token);
 
     // Attach the user and his permissions to the req object
     req.user = {
-      userId: payload.user.userId,
+      userId: payload.user.id,
       role: payload.user.role,
+      name : payload.user.name
     };
 
     next();

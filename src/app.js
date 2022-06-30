@@ -10,6 +10,7 @@ const cors = require('cors')
 
 //router
 const authRouter = require('./routes/auth.route')
+const articleRouter = require('./routes/article.route')
 
 //middleware
 const notFoundMiddleware = require('./middleware/not-found');
@@ -19,6 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/articles', articleRouter)
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
