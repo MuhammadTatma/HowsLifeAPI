@@ -30,7 +30,7 @@ const registerPasien = async (req, res) => {
         }
     }
 
-    const hashedPassword = hashString(password);
+    const hashedPassword = await hashString(password);
     const queryInsertUser = ` INSERT INTO users 
                         (role, email, password, no_induk, name, jenis_kelamin, tempat_lahir, tanggal_lahir, no_telepon, created_at) 
                     VALUES
@@ -47,9 +47,41 @@ const registerPasien = async (req, res) => {
     
 }
 
+//login
+const login = async (req, res) => {
+    const { email, password } = req.body
 
+    if(!email || !password){
+        throw new CustomError.BadRequestError("email and password required")
+    }
+
+    const [rows,fields] = await dbPool.query(`SELECT id, role, name, email, password from users WHERE email = '${email}'`)
+    const emailNotFound = rows.length<1
+    if(emailNotFound){
+        throw new CustomError.NotFoundError("Email not found")
+    }
+
+    const wrongPassword = !compareBcrypt(password, rows[0].password);
+    if(wrongPassword){
+        throw new CustomError.UnauthenticatedError("Wrong Password")
+    }else{
+        const user = {
+            id: rows[0].id,
+            role: rows[0].role,
+            name: rows[0].name
+        }
+        const accessToken = createJWT({payload:{user}})
+        res.status(200).json({
+            success: true,
+            message:"success",
+            data: {
+                accessToken : accessToken
+            }
+        })
+    }
+}
 
 
 module.exports = {
-    registerPasien
+    registerPasien, login
 }
