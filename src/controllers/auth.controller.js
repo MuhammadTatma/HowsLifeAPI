@@ -1,7 +1,9 @@
 const CustomError = require('../errors')
 const dbPool = require('../db/connectDB')
+const { StatusCodes } = require('http-status-codes');
+const {createJWT, compareBcrypt, isTokenValid, hashString } = require('../utils')
 
-//register
+//register pasien
 const registerPasien = async (req, res) => {
     const {email, name, password, jenis_kelamin, tempat_lahir, tanggal_lahir, no_induk, no_telepon} = req.body;
 
@@ -22,12 +24,30 @@ const registerPasien = async (req, res) => {
         const tempEmail = rows[0].countEmail !== 0 ? "Email" : null ;
         const tempNIM = rows[0].countNIM !== 0 ? "NIM" : null ;
         const tempNoTelepon = rows[0].countTelepon !== 0 ? "Nomor Telepon" : null ;
-        const msg = [tempEmail, tempNIM, tempNoTelepon].filter((iter) => iter !== null).join(", ") + " Already exist"
-        throw new CustomError.BadRequestError(msg)
+        if( tempEmail ||  tempNIM || tempNoTelepon){
+            const msg = [tempEmail, tempNIM, tempNoTelepon].filter((iter) => iter !== null).join(", ") + " Already exist"
+            throw new CustomError.BadRequestError(msg)
+        }
     }
+
+    const hashedPassword = hashString(password);
+    const queryInsertUser = ` INSERT INTO users 
+                        (role, email, password, no_induk, name, jenis_kelamin, tempat_lahir, tanggal_lahir, no_telepon, created_at) 
+                    VALUES
+                        (2, '${email}', '${hashedPassword}', '${no_induk}', '${name}', '${jenis_kelamin}', '${tempat_lahir}', '${tanggal_lahir}', '${no_telepon}', NOW());`
     
-    res.json({"aw" : "aw"})
+    await dbPool.query(queryInsertUser)
+        .then(([rows, fields]) => {
+            res.status(StatusCodes.CREATED).json({
+                success: true,
+                message: "Success created",
+                data: null
+            })
+        })
+    
 }
+
+
 
 
 module.exports = {
