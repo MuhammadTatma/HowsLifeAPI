@@ -2,12 +2,15 @@ const express = require('express');
 const router = express.Router();
 
 //controller
-const { addSchedulePreferences, getSchedulePreferencesByDate } = require('../controllers/konselor.controller');
+const { addMySchedulePreferences,
+    getMySchedulePreferencesByDate,
+    getAvailableSchedulebyDate } = require('../controllers/konselor.controller');
 //authenticate user
 const { authenticateUser, authorizeRoles } = require('../middleware/authentication')
 
-router.route('/jadwal/me').post(authenticateUser, authorizeRoles(3,4), addSchedulePreferences)
-router.route('/jadwal/me/:date').get(authenticateUser, authorizeRoles(3,4), getSchedulePreferencesByDate)
+router.route('/jadwal/me').post(authenticateUser, authorizeRoles(3,4), addMySchedulePreferences)
+router.route('/jadwal/me/:date').get(authenticateUser, authorizeRoles(3,4), getMySchedulePreferencesByDate)
+router.route('/jadwal/:date').get(authenticateUser, getAvailableSchedulebyDate)
 
 
 module.exports = router
