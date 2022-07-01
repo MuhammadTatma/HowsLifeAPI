@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router()
 
 //controller
-const {daftarKonsultasi} = require('../controllers/konsultasi.controller');
+const {daftarKonsultasi, addPreferensiWaktuKonsultasi} = require('../controllers/konsultasi.controller');
 
-const { authenticateUser, authorizeRoles } = require('../middleware/authentication')
+const { authenticateUser, authorizeRoles } = require('../middleware/authentication');
 
 router.route('/daftar').post(authenticateUser,authorizeRoles(2), daftarKonsultasi)
+router.route('/jadwal/me').post(authenticateUser, authorizeRoles(2), addPreferensiWaktuKonsultasi)
 
 module.exports = router
