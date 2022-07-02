@@ -63,7 +63,6 @@ const getAvailableSchedulebyDate = async (req, res) => {
         q += ` AND r.role LIKE "%${jenis}"`
     }
 
-    const order = ``
     await dbPool.query(q)
         .then(([rows,fields]) => {
             const temp = rows.map((iter) => {

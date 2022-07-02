@@ -52,7 +52,25 @@ const addPreferensiWaktuKonsultasi = async (req, res) => {
         })
 }
 
+const getMyPreferenceTime = async (req, res) => {
+    const { userId } = req.user
+
+    const q =  `SELECT DATE_FORMAT(kp.time,"%W, %e %M %Y") as date, DATE_FORMAT(kp.time,"%H:%S") as time  FROM konsultasi_preferensi kp LEFT JOIN konsultasi k on kp.id_konsultasi = k.id limit 3`
+
+    const [rows,fields] = await dbPool.query(q)
+    const haveWaitingRequest = rows.length > 0
+    if(!haveWaitingRequest){
+        throw new CustomError.BadRequestError("You don't have waiting request")
+    }
+
+    res.status(StatusCodes.CREATED).json({
+        success : true,
+        message : "Success Created Preferences ",
+        data : rows
+    })
+}
+
 
 module.exports = {
-    daftarKonsultasi, addPreferensiWaktuKonsultasi
+    daftarKonsultasi, addPreferensiWaktuKonsultasi, getMyPreferenceTime
 }
