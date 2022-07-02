@@ -55,7 +55,7 @@ const addPreferensiWaktuKonsultasi = async (req, res) => {
 const getMyPreferenceTime = async (req, res) => {
     const { userId } = req.user
 
-    const q =  `SELECT DATE_FORMAT(kp.time,"%W, %e %M %Y") as date, DATE_FORMAT(kp.time,"%H:%S") as time  FROM konsultasi_preferensi kp LEFT JOIN konsultasi k on kp.id_konsultasi = k.id limit 3`
+    const q =  `SELECT DATE_FORMAT(kp.time,"%W, %e %M %Y") as date, DATE_FORMAT(kp.time,"%H:%S") as time  FROM konsultasi_preferensi kp LEFT JOIN konsultasi k on kp.id_konsultasi = k.id WHERE k.id_user = ${userId} `
 
     const [rows,fields] = await dbPool.query(q)
     const haveWaitingRequest = rows.length > 0
@@ -63,9 +63,9 @@ const getMyPreferenceTime = async (req, res) => {
         throw new CustomError.BadRequestError("You don't have waiting request")
     }
 
-    res.status(StatusCodes.CREATED).json({
+    res.status(StatusCodes.OK).json({
         success : true,
-        message : "Success Created Preferences ",
+        message : "Success get preferences time",
         data : rows
     })
 }
