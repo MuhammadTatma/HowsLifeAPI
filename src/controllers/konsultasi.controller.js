@@ -55,7 +55,7 @@ const addPreferensiWaktuKonsultasi = async (req, res) => {
 const getMyPreferenceTime = async (req, res) => {
     const { userId } = req.user
 
-    const q =  `SELECT DATE_FORMAT(kp.time,"%W, %e %M %Y") as date, DATE_FORMAT(kp.time,"%H:%S") as time  FROM konsultasi_preferensi kp LEFT JOIN konsultasi k on kp.id_konsultasi = k.id WHERE k.id_user = ${userId} `
+    const q =  `SELECT DATE_FORMAT(kp.time,"%W, %e %M %Y") as date, DATE_FORMAT(kp.time,"%H:%S") as time  FROM konsultasi_preferensi kp LEFT JOIN konsultasi k on kp.id_konsultasi = k.id WHERE k.status = "waiting" AND k.id_user = ${userId} `
 
     const [rows,fields] = await dbPool.query(q)
     const haveWaitingRequest = rows.length > 0
@@ -70,7 +70,29 @@ const getMyPreferenceTime = async (req, res) => {
     })
 }
 
+const cancelKonsultasi = async (req, res) => {
+    const { userId } = req.user
+
+    let q = `SELECT id FROM konsultasi WHERE id_user = ${userId} AND status = "waiting"`;
+
+    const [rows,fields] = await dbPool.query(q)
+    const haveWaitingRequest = rows.length > 0
+    if(!haveWaitingRequest){
+        throw new CustomError.BadRequestError("You don't have waiting request")
+    }
+    const idKonsultasi = rows[0].id
+    q = `UPDATE konsultasi SET status = "canceled" WHERE id = ${idKonsultasi};`
+    await dbPool.query(q)
+        .then(([rows,fields])=>{
+            res.status(StatusCodes.OK).json({
+                success : true,
+                message : "Successfully Cancel",
+                data : null
+            })
+        })
+}
+
 
 module.exports = {
-    daftarKonsultasi, addPreferensiWaktuKonsultasi, getMyPreferenceTime
+    daftarKonsultasi, addPreferensiWaktuKonsultasi, getMyPreferenceTime, cancelKonsultasi
 }
