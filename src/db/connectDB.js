@@ -1,11 +1,17 @@
 const mysql = require('mysql2');
+const fs = require('fs');
+const serverCa = [fs.readFileSync("DigiCertGlobalRootCA.crt.pem", "utf8")];
 
 const pool = mysql.createPool({
-    host: 'sql6.freesqldatabase.com',
+    host: 'howslifeserver-mysql.mysql.database.azure.com',
     connectTimeout: 20000,
-    user: 'sql6502112',
-    password: 'cjI2lTHkhZ',
-    database: 'sql6502112',
+    user: 'howslifedatabaseadmin',
+    password: 'N@m@iw@k',
+    database: 'howslife',
+    ssl: {
+        rejectUnauthorized: true,
+        ca: serverCa
+    }
 })
 
 pool.on('connection', ()=> {

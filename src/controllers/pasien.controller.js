@@ -1,6 +1,6 @@
 const moment = require('moment-timezone')
 const dbPool = require('../db/connectDB')
-const { StatusCodes, CREATED } = require('http-status-codes');
+const { StatusCodes } = require('http-status-codes');
 const CustomError = require('../errors')
 
 const daftarKonsultasi = async (req, res) => {
