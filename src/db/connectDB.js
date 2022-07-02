@@ -1,7 +1,7 @@
 require('dotenv').config();
 const mysql = require('mysql2');
 const fs = require('fs');
-const serverCa = [fs.readFileSync("DigiCertGlobalRootCA.crt.pem", "utf8")];
+
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -11,7 +11,7 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME,
     ssl: {
         rejectUnauthorized: true,
-        ca: serverCa
+        ca: process.env.DB_CERT
     }
 })
 
