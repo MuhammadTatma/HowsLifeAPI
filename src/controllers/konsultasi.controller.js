@@ -57,7 +57,7 @@ const getKonsultasiByID = async (req , res) => {
 
     q = `
     SELECT
-        DATE_FORMAT(kp.time, "%W, %e %M %Y %T WIB") as preferenceTime
+        DATE_FORMAT(kp.time, "%W, %e %M %Y %H:%i WIB") as preferenceTime
     FROM 
         konsultasi_preferensi kp
     WHERE 

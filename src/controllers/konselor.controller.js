@@ -50,7 +50,7 @@ const getMySchedulePreferencesByDate = async (req, res) => {
 const getAvailableSchedulebyDate = async (req, res) => {
     const {date} = req.params
     const {kelamin, jenis} = req.query
-    let q = `SELECT DISTINCT LPAD(HOUR(time),2,0) as "hour" 
+    let q = `SELECT DISTINCT DATE_FORMAT(time, "%H:%i") as "hour" 
                 FROM konselor_preferensi kp LEFT JOIN users u on kp.konselor_id = u.id LEFT JOIN roles r on u.role = r.id
                 WHERE DATE(time) = "${date}" AND is_available = true`
 
@@ -65,9 +65,6 @@ const getAvailableSchedulebyDate = async (req, res) => {
 
     await dbPool.query(q)
         .then(([rows,fields]) => {
-            const temp = rows.map((iter) => {
-                return iter.hour + ":00"
-            }) 
             res.status(StatusCodes.OK).json({
                 success: true,
                 message: "Success GET preference at " + date,
@@ -76,7 +73,7 @@ const getAvailableSchedulebyDate = async (req, res) => {
                     hour : arrayOfWorkingHour.map( (iter) => {
                             return {
                                 "time" : iter,
-                                "available": temp.includes(iter)
+                                "available": rows.map((iter) => iter.hour).includes(iter)
                             }
                         })
                     }
