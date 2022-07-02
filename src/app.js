@@ -13,6 +13,7 @@ const authRouter = require('./routes/auth.route')
 const articleRouter = require('./routes/article.route')
 const konselorRouter = require('./routes/konselor.route')
 const konsultasiRouter = require('./routes/konsultasi.route')
+const pasienRouter = require('./routes/pasien.route')
 
 //middleware
 const notFoundMiddleware = require('./middleware/not-found');
@@ -25,6 +26,7 @@ app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/articles', articleRouter)
 app.use('/api/v1/konselor', konselorRouter)
 app.use('/api/v1/konsultasi', konsultasiRouter)
+app.use('/api/v1/pasien', pasienRouter)
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

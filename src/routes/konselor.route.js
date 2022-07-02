@@ -8,8 +8,11 @@ const { addMySchedulePreferences,
 //authenticate user
 const { authenticateUser, authorizeRoles } = require('../middleware/authentication')
 
-router.route('/jadwal/me').post(authenticateUser, authorizeRoles(3,4), addMySchedulePreferences)
-router.route('/jadwal/me/:date').get(authenticateUser, authorizeRoles(3,4), getMySchedulePreferencesByDate)
+router.route('/me/jadwal').post(authenticateUser, authorizeRoles(3,4), addMySchedulePreferences)
+router.route('/me/jadwal/:date').get(authenticateUser, authorizeRoles(3,4), getMySchedulePreferencesByDate)
+
+
+
 router.route('/jadwal/:date').get(authenticateUser, getAvailableSchedulebyDate)
 
 
