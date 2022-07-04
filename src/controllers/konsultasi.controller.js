@@ -154,7 +154,7 @@ const getKonsultasiByID = async (req , res) => {
                     role : iter.role,
                     match : hasMatch,
                     timeMatch : hasMatch?dateDiff["00:00:00"]:null,
-                    link : `localhost:3000/api/v1/admin/requestkonselor/${iter.konselor_id}`
+                    link : `localhost:3000/api/v1/konsultasi/${idKonsultasi}/request/${iter.konselor_id}`
                 }
             })
         })
@@ -166,6 +166,21 @@ const getKonsultasiByID = async (req , res) => {
     })
 }
 
+const requestKonselor = async (req,res) => {
+    const {idKonsultasi, idKonselor} = req.params
+    const q = `INSERT INTO request_konselor (id_konsultasi, id_konselor, status) VALUES (${idKonsultasi}, ${idKonselor}, "active")`
+
+    await dbPool.query(q)
+        .then(([rows,fields]) => {
+            res.status(StatusCodes.CREATED).json({
+                success: true,
+                message: `Success make request`,
+                data: null
+            })
+        })
+}
+
+
 module.exports = {
-    getAllKonsultasi, getKonsultasiByID
+    getAllKonsultasi, getKonsultasiByID, requestKonselor
 }
