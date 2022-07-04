@@ -81,6 +81,89 @@ const getAvailableSchedulebyDate = async (req, res) => {
         })
 }
 
+const getAllPermintaanKonsultasi = async (req,res) => {
+    const {userId:konselorID} = req.user
+    const q = `
+    SELECT 
+        k.id as "konsultasi ID",
+        u.name,
+        TIMESTAMPDIFF(YEAR, u.tanggal_lahir, CURDATE()) AS age,
+        u.jenis_kelamin,
+        DATE_FORMAT(k.created, "%W, %e %M %Y  %T WIB") as created,
+        k.status as statuskonsultasi
+    FROM konsultasi k LEFT JOIN users u on k.id_user = u.id
+        LEFT JOIN request_konselor rk on k.id = rk.id_konsultasi
+    WHERE k.status = 'waiting'  AND rk.status = "active" AND rk.id_konselor = ${konselorID}
+    `
+    await dbPool.query(q)
+     .then(([rows,fields]) => {
+        res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Success",
+            data: rows.map((iter) => {
+                return {
+                    ...iter,
+                    link : `https://howslifeapi.herokuapp.com/konselor/me/permintaan/${iter["konsultasi ID"]}`
+                }
+            })
+        })
+     })
+}
+
+const getDetailedPermintaan = async (req,res) => {
+    const {idkonsultasi} = req.params
+    let q =`
+    WITH preference_time as (
+        SELECT
+            kp.id_konsultasi ,
+            GROUP_CONCAT(DATE_FORMAT(kp.time, "%Y-%m-%d %H:%i:%s") SEPARATOR '$') as preferenceTime
+        FROM 
+            konsultasi_preferensi kp
+        WHERE 
+            kp.id_konsultasi = ${idkonsultasi}
+        GROUP BY kp.id_konsultasi
+        )
+    SELECT 
+        u.name,
+        TIMESTAMPDIFF(YEAR, u.tanggal_lahir, CURDATE()) AS age,
+        DATE_FORMAT(k.created, "%W, %e %M %Y  %T WIB") as created,
+        pt.preferenceTime,
+        k.status,
+        k.pref_konselor_type,
+        k.pref_kelamin_konselor,
+        k.subject_masalah,
+        k.permasalahan,
+        k.usaha,
+        k.kendala
+    FROM 
+        konsultasi k LEFT JOIN users u ON k.id_user = u.id 
+        left JOIN preference_time pt on k.id = pt.id_konsultasi
+    WHERE 
+        k.id = ${idkonsultasi}
+    `
+    let [rows,fields] = await dbPool.query(q)
+
+    const notFound = rows.length < 1
+    if(notFound){
+        throw new CustomError.NotFoundError("ID Not Found")
+    }
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Success",
+        data: rows.map((iter) => {
+            return {
+                ...iter,
+                preferenceTime: iter.preferenceTime.split('$').map((iter) => {
+                    return {
+                        "time" : iter,
+                        "link" : "menyusul"
+                    }
+                })
+            }
+        })
+    })
+}
 module.exports = {
-    addMySchedulePreferences, getMySchedulePreferencesByDate, getAvailableSchedulebyDate
+    addMySchedulePreferences, getMySchedulePreferencesByDate, getAvailableSchedulebyDate,
+    getAllPermintaanKonsultasi, getDetailedPermintaan
 }

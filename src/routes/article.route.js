@@ -8,7 +8,7 @@ const { getAllArticle } = require('../controllers/article.controller')
 const { authenticateUser } = require('../middleware/authentication')
 
 //route
-router.route('/').get(authenticateUser, getAllArticle)
+router.route('/').get(getAllArticle)
 
 
 module.exports = router

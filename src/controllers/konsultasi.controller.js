@@ -22,7 +22,7 @@ const getAllKonsultasi = async (req, res) => {
         success: true,
         message: "Success get all konsultasi",
         data: rows.map((iter) => {
-            const konsltasi = {...iter, link : `localhost:3000/api/v1/konsultasi/${iter["konsultasi ID"]}`}
+            const konsltasi = {...iter, link : `https://howslifeapi.herokuapp.com/api/v1/konsultasi/${iter["konsultasi ID"]}`}
             return konsltasi
         })
     })
@@ -154,7 +154,7 @@ const getKonsultasiByID = async (req , res) => {
                     role : iter.role,
                     match : hasMatch,
                     timeMatch : hasMatch?dateDiff["00:00:00"]:null,
-                    link : `localhost:3000/api/v1/konsultasi/${idKonsultasi}/request/${iter.konselor_id}`
+                    link : `https://howslifeapi.herokuapp.com/api/v1/konsultasi/${idKonsultasi}/request/${iter.konselor_id}`
                 }
             })
         })

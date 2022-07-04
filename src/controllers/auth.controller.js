@@ -126,8 +126,9 @@ const login = async (req, res) => {
         throw new CustomError.NotFoundError("Email not found")
     }
 
-    const wrongPassword = !compareBcrypt(password, rows[0].password);
-    if(wrongPassword){
+    const wrongPassword = await compareBcrypt(password, rows[0].password);
+    console.log(wrongPassword);
+    if(!wrongPassword){
         throw new CustomError.UnauthenticatedError("Wrong Password")
     }else{
         const user = {
