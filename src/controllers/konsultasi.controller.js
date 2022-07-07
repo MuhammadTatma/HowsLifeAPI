@@ -129,6 +129,7 @@ const getKonsultasiByID = async (req , res) => {
             SELECT 
                 u.id as konselor_id,
                 u.name,
+                u.jenis_kelamin,
                 r.role
             FROM users u left join roles r on u.role = r.id
             WHERE u.role in(3,4)
@@ -145,15 +146,27 @@ const getKonsultasiByID = async (req , res) => {
     await dbPool.query(q)
         .then(([rows,fields])=> {
             // console.log(rows);
-            result.posibleKonselor = rows.map((iter) => {
+            result.konselor = rows.map((iter) => {
                 const dateDiff = { [iter.first_datediff] : iter.first_pref, [iter.second_datediff] : iter.second_pref, [iter.third_datediff] : iter.third_pref}
-                const hasMatch = iter.first_datediff === "00:00:00" || iter.second_datediff === "00:00:00" || iter.third_datediff === "00:00:00"
+                const timeMatch = (iter.first_datediff === "00:00:00" || iter.second_datediff === "00:00:00" || iter.third_datediff === "00:00:00") 
+                const roleMatch = iter.role.split(" ")[1].toLowerCase() === result.pref_konselor_type.toLowerCase()
+                const kelaminMatch = iter.jenis_kelamin.toLowerCase() === result.pref_kelamin_konselor.toLowerCase()
                 return {
                     konselorID : iter.konselor_id,
                     name : iter.name,
-                    role : iter.role,
-                    match : hasMatch,
-                    timeMatch : hasMatch?dateDiff["00:00:00"]:null,
+                    ringkasan : [
+                        {
+                            role : iter.role,
+                            isMatch : roleMatch
+                        },
+                        {
+                            jenis_kelamin : iter.jenis_kelamin,
+                            isMatch : kelaminMatch
+                        },{
+                            haveTimeMatch : timeMatch,
+                            time: dateDiff["00:00:00"]
+                        }
+                    ],
                     link : `https://howslifeapi.herokuapp.com/api/v1/konsultasi/${idKonsultasi}/request/${iter.konselor_id}`
                 }
             })

@@ -6,7 +6,7 @@ const { addMySchedulePreferences,
     getMySchedulePreferencesByDate,
     getAvailableSchedulebyDate, 
     getAllPermintaanKonsultasi,
-    getDetailedPermintaan
+    getDetailedPermintaan, konfirmasiPermintaan
 } = require('../controllers/konselor.controller');
 //authenticate user
 const { authenticateUser, authorizeRoles } = require('../middleware/authentication')
@@ -14,7 +14,7 @@ const { authenticateUser, authorizeRoles } = require('../middleware/authenticati
 router.route('/me/jadwal').post(authenticateUser, authorizeRoles(3,4), addMySchedulePreferences)
 router.route('/me/jadwal/:date').get(authenticateUser, authorizeRoles(3,4), getMySchedulePreferencesByDate)
 router.route('/me/permintaan').get(authenticateUser, getAllPermintaanKonsultasi)
-router.route('/me/permintaan/:idkonsultasi').get(authenticateUser, getDetailedPermintaan)
+router.route('/me/permintaan/:idkonsultasi').get(authenticateUser, getDetailedPermintaan).post(authenticateUser, konfirmasiPermintaan)
 
 
 router.route('/jadwal/:date').get(authenticateUser, getAvailableSchedulebyDate)

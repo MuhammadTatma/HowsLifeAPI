@@ -1,6 +1,7 @@
 const dbPool = require('../db/connectDB')
 const { StatusCodes } = require('http-status-codes');
 const arrayOfWorkingHour = require('../dummyData/workingHour')
+const CustomError = require('../errors')
 
 const addMySchedulePreferences = async (req, res) => {
     const {date, time} = req.body
@@ -150,20 +151,65 @@ const getDetailedPermintaan = async (req,res) => {
     res.status(StatusCodes.OK).json({
         success: true,
         message: "Success",
-        data: rows.map((iter) => {
-            return {
-                ...iter,
-                preferenceTime: iter.preferenceTime.split('$').map((iter) => {
-                    return {
-                        "time" : iter,
-                        "link" : "menyusul"
-                    }
-                })
-            }
-        })
+        data: {
+            ...rows[0],
+            preferenceTime: rows[0].preferenceTime.split('$').map((iter) => {
+                return iter
+            }),
+            linkKonfirmasi : `https://howslifeapi.herokuapp.com/konselor/me/permintaan/${idkonsultasi}`
+
+        }
+        
+        
     })
+}
+
+const konfirmasiPermintaan = async (req, res) => {
+    const {userId:konselorID} = req.user
+    const {idkonsultasi} = req.params
+    const {time} = req.body
+    
+    let q = `
+    SELECT 
+        k.id_konselor,
+        k.scheduled_time
+    FROM konsultasi k 
+    WHERE k.id_konselor = ${konselorID} AND k.scheduled_time = "${time}"
+    `
+    const [rows,fields] = await dbPool.query(q)
+    
+    const scheduleConflict = rows.length > 0
+
+    if(scheduleConflict){
+        throw new CustomError.BadRequestError("Anda memiliki jadwal pada waktu tersebut")
+    }
+
+    q = `
+    UPDATE konsultasi SET id_konselor = ${konselorID}, scheduled_time = "${time}", status = "scheduled" WHERE id = ${idkonsultasi};
+    `
+    await dbPool.query(q)
+        .then(([rows,fields]) => {
+            console.log("success update konsultasi");
+        })
+    
+    q = `
+    UPDATE request_konselor SET status = 'confirmed' WHERE id_konselor = ${konselorID} and id_konsultasi = ${idkonsultasi} and status = 'active';
+    `
+
+    await dbPool.query(q)
+        .then(()=>{
+            console.log("success update request konselor");
+        })
+
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Success",
+        data: null
+    })
+    
+
 }
 module.exports = {
     addMySchedulePreferences, getMySchedulePreferencesByDate, getAvailableSchedulebyDate,
-    getAllPermintaanKonsultasi, getDetailedPermintaan
+    getAllPermintaanKonsultasi, getDetailedPermintaan, konfirmasiPermintaan
 }

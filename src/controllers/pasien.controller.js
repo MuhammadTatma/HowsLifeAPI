@@ -92,7 +92,37 @@ const cancelKonsultasi = async (req, res) => {
         })
 }
 
+const getMySumarry = async (req, res) =>{
+    const { userId } = req.user
+
+    const  q = `
+    SELECT 
+        u.name,
+        k.id as id_konsultasi,
+        k.status
+    FROM users u LEFT JOIN konsultasi k on u.id = k.id_user
+    WHERE u.id = ${userId}  AND ( iSNULL(k.status) or k.status = "waiting" or k.status = "scheduled")
+    `
+
+    await dbPool.query(q)
+        .then(([rows,fields]) => {
+            res.status(StatusCodes.OK).json({
+                success : true,
+                message : "Successfully ",
+                data : {
+                    name : rows[0].name,
+                    konsultasi : rows[0].id_konsultasi?{
+                        status : rows[0].status,
+                        detailed : `https://howslifeapi.herokuapp.com/api/v1/pasien/me/konsultasi/${rows[0].id_konsultasi}`
+                    }:null
+                }
+            })
+        })
+    
+    
+}
+
 
 module.exports = {
-    daftarKonsultasi, addPreferensiWaktuKonsultasi, getMyPreferenceTime, cancelKonsultasi
+    daftarKonsultasi, addPreferensiWaktuKonsultasi, getMyPreferenceTime, cancelKonsultasi, getMySumarry
 }
