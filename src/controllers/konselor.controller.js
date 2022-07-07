@@ -157,10 +157,7 @@ const getDetailedPermintaan = async (req,res) => {
                 return iter
             }),
             linkKonfirmasi : `https://howslifeapi.herokuapp.com/konselor/me/permintaan/${idkonsultasi}`
-
         }
-        
-        
     })
 }
 
@@ -209,7 +206,36 @@ const konfirmasiPermintaan = async (req, res) => {
     
 
 }
+
+const getAllMyPasien = async (req, res) => {
+    const {userId:konselorID} = req.user
+    const q = `
+    SELECT 
+        k.id_user,
+        u.name,
+        TIMESTAMPDIFF(YEAR, u.tanggal_lahir, CURDATE()) AS age,
+        u.jenis_kelamin
+    FROM konsultasi k LEFT JOIN users u on k.id_user = u.id
+    WHERE  k.id_konselor = 16
+    GROUP BY k.id_user
+    `
+
+    await dbPool.query(q).then(([rows,fields]) => {
+        res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Success",
+            data: rows.map((iter) => {
+                return {
+                    id_pasien : iter.id_user,
+                    name: iter.name,
+                    age: iter.age,
+                    kelamin: iter.jenis_kelamin
+                }
+            })
+        })
+    })
+}
 module.exports = {
     addMySchedulePreferences, getMySchedulePreferencesByDate, getAvailableSchedulebyDate,
-    getAllPermintaanKonsultasi, getDetailedPermintaan, konfirmasiPermintaan
+    getAllPermintaanKonsultasi, getDetailedPermintaan, konfirmasiPermintaan, getAllMyPasien
 }
