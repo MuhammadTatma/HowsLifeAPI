@@ -122,7 +122,50 @@ const getMySumarry = async (req, res) =>{
     
 }
 
+const getMySingleKonsultasi = async (req,res) => {
+    const { userId } = req.user
+    const {idKonsultasi} = req.params
+
+    const q = `
+    WITH konselors AS (
+		SELECT 
+			u.id as konselor_id,
+			u.name,
+			u.jenis_kelamin,
+			u.no_telepon,
+			r.role
+		FROM users u left join roles r on u.role = r.id
+		WHERE u.role in(3,4)
+	)
+
+    SELECT 
+        u.name as namaPasien,
+        k.status,
+        kon.name as namaKonselor,
+        kon.role,
+        kon.jenis_kelamin,
+        kon.no_telepon,
+        DATE_FORMAT(k.scheduled_time, "%W, %e %M %Y %T") as jadwal
+    FROM users u LEFT JOIN konsultasi k on u.id = k.id_user LEFT JOIN konselors kon on  kon.konselor_id = k.id_konselor
+    WHERE u.id =  ${userId} AND ( iSNULL(k.status) or k.status = "waiting" or k.status = "scheduled")
+    `
+
+    await dbPool.query(q)
+        .then(([rows,fields]) => {
+            if(rows.length < 0){
+                throw new CustomError.BadRequestError("Konsultasi tidak ditemukan");
+            }
+
+
+            res.status(StatusCodes.OK).json({
+                success : true,
+                message : "Success",
+                data : rows[0]
+            })
+        })
+}
+
 
 module.exports = {
-    daftarKonsultasi, addPreferensiWaktuKonsultasi, getMyPreferenceTime, cancelKonsultasi, getMySumarry
+    daftarKonsultasi, addPreferensiWaktuKonsultasi, getMyPreferenceTime, cancelKonsultasi, getMySumarry, getMySingleKonsultasi
 }
