@@ -11,7 +11,7 @@ const daftarKonsultasi = async (req, res) => {
     SELECT 
     k.id
     FROM konsultasi k
-    WHERE k.status = "waiting" or (k.status = "scheduled" and k.scheduled_time > '${timeStamp}') AND k.id_user = 18
+    WHERE k.status = "waiting" or (k.status = "scheduled" and k.scheduled_time > '${timeStamp}') AND k.id_user = ${userId}
     `
     await dbPool.query(cek).then(([rows,fields])=>{
         const haveOnGoingRequest = rows.length > 0
