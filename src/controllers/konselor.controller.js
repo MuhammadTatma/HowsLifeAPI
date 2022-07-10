@@ -4,7 +4,13 @@ const arrayOfWorkingHour = require('../dummyData/workingHour')
 const CustomError = require('../errors')
 
 const addMySchedulePreferences = async (req, res) => {
-    const {date, time} = req.body
+    const { date } = req.params
+    const { time } = req.body
+
+    if(!date || !time){
+        throw new CustomError.BadRequestError("date and time is required")
+    }
+
     const {userId:konselorID} = req.user
     const queryDelete = `DELETE FROM konselor_preferensi where DATE(time) = "${date}" AND konselor_id = ${konselorID} ;`
     let q = `INSERT INTO konselor_preferensi (konselor_id, time) VALUES `;
@@ -18,8 +24,7 @@ const addMySchedulePreferences = async (req, res) => {
         .then(([rows, fields]) => {
             res.status(StatusCodes.CREATED).json({
                 success: true,
-                message: "Successfuly save",
-                data: null
+                message: "success"
             })
         }) 
 }
@@ -37,7 +42,7 @@ const getMySchedulePreferencesByDate = async (req, res) => {
             }) 
             res.status(StatusCodes.OK).json({
                 success: true,
-                message: "Success GET preference at " + date,
+                message: "success GET my preference at " + date,
                 data: arrayOfWorkingHour.map( (iter) => {
                             return {
                                 "time" : iter,
@@ -86,7 +91,7 @@ const getAllPermintaanKonsultasi = async (req,res) => {
     const {userId:konselorID} = req.user
     const q = `
     SELECT 
-        k.id as "konsultasi ID",
+        k.id as "konsultasiId",
         u.name,
         TIMESTAMPDIFF(YEAR, u.tanggal_lahir, CURDATE()) AS age,
         u.jenis_kelamin,
@@ -100,11 +105,11 @@ const getAllPermintaanKonsultasi = async (req,res) => {
      .then(([rows,fields]) => {
         res.status(StatusCodes.OK).json({
             success: true,
-            message: "Success",
+            message: "success",
             data: rows.map((iter) => {
                 return {
                     ...iter,
-                    link : `https://howslifeapi.herokuapp.com/konselor/me/permintaan/${iter["konsultasi ID"]}`
+                    link : `https://howslifeapi.herokuapp.com/konselor/me/permintaan/${iter["konsultasiId"]}`
                 }
             })
         })
@@ -150,7 +155,7 @@ const getDetailedPermintaan = async (req,res) => {
     }
     res.status(StatusCodes.OK).json({
         success: true,
-        message: "Success",
+        message: "success",
         data: {
             ...rows[0],
             preferenceTime: rows[0].preferenceTime.split('$').map((iter) => {
@@ -200,8 +205,7 @@ const konfirmasiPermintaan = async (req, res) => {
 
     res.status(StatusCodes.OK).json({
         success: true,
-        message: "Success",
-        data: null
+        message: "success"
     })
     
 
@@ -216,14 +220,14 @@ const getAllMyPasien = async (req, res) => {
         TIMESTAMPDIFF(YEAR, u.tanggal_lahir, CURDATE()) AS age,
         u.jenis_kelamin
     FROM konsultasi k LEFT JOIN users u on k.id_user = u.id
-    WHERE  k.id_konselor = 16
+    WHERE  k.id_konselor = ${konselorID}
     GROUP BY k.id_user
     `
 
     await dbPool.query(q).then(([rows,fields]) => {
         res.status(StatusCodes.OK).json({
             success: true,
-            message: "Success",
+            message: "success",
             data: rows.map((iter) => {
                 return {
                     id_pasien : iter.id_user,

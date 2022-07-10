@@ -5,13 +5,18 @@ const CustomError = require('../errors');
 
 const daftarKonsultasi = async (req, res) => {
     const { jenisKonselor, kelaminKonselor, riwayatKonsultasi, subject, masalah, usaha, kendala } = req.body
+
+    if(!jenisKonselor || !kelaminKonselor || !riwayatKonsultasi || !subject || !masalah || !usaha || !kendala){
+        throw new CustomError.BadRequestError('Please provide all required data');
+    }
+
     const { userId } = req.user
     const timeStamp = moment.tz(new Date(), "Asia/Jakarta").format('YYYY-MM-DD HH:mm:ss')
     const cek  = `
     SELECT 
     k.id
     FROM konsultasi k
-    WHERE k.status = "waiting" or (k.status = "scheduled" and k.scheduled_time > '${timeStamp}') AND k.id_user = ${userId}
+    WHERE (k.status = "waiting" or (k.status = "scheduled" and k.scheduled_time > '${timeStamp}')) AND k.id_user = ${userId}
     `
     await dbPool.query(cek).then(([rows,fields])=>{
         const haveOnGoingRequest = rows.length > 0
@@ -24,11 +29,13 @@ const daftarKonsultasi = async (req, res) => {
     konsultasi (id_user, pref_konselor_type, pref_kelamin_konselor, permasalahan, usaha, kendala, riwayat_tempat_lain, subject_masalah, created, status) VALUES ( ${userId}, "${jenisKonselor}", "${kelaminKonselor}", "${masalah}", "${usaha}", "${kendala}", ${riwayatKonsultasi}, "${subject}", "${timeStamp}", "waiting" )`
 
     await dbPool.query(q)
-        .then(() => {
+        .then(([rows]) => {
             return res.status(StatusCodes.CREATED).json({
                 "success": true,
                 "message" : "Successfully created",
-                "data" : null
+                "data": {
+                    konsultasiId: rows.insertId
+                }
             })
         })
 }
@@ -36,6 +43,10 @@ const daftarKonsultasi = async (req, res) => {
 const addPreferensiWaktuKonsultasi = async (req, res) => {
     const { data } = req.body
     const { userId } = req.user
+
+    if(!data){
+        throw new CustomError.BadRequestError("Please provide data")
+    }
 
     let q = `SELECT id FROM konsultasi WHERE id_user = ${userId} AND status = "waiting"`;
     const [rows,fields] = await dbPool.query(q)
@@ -49,6 +60,9 @@ const addPreferensiWaktuKonsultasi = async (req, res) => {
     q = `INSERT INTO konsultasi_preferensi (id_konsultasi, time) VALUES `
 
     data.forEach( (iter) => {
+        if(!iter.date || !iter.time){
+            throw new CustomError.BadRequestError("please provide date and time in your data")
+        }
         iter.time.forEach( (time) => {
             q += `(${idKonsultasi}, "${iter.date} ${time}"),`
         })
@@ -59,8 +73,7 @@ const addPreferensiWaktuKonsultasi = async (req, res) => {
         .then(([rows,fields])=>{
             res.status(StatusCodes.CREATED).json({
                 success : true,
-                message : "Success Created Preferences ",
-                data : null
+                message : "Success Created Preferences"
             })
         })
 }
@@ -99,8 +112,7 @@ const cancelKonsultasi = async (req, res) => {
         .then(([rows,fields])=>{
             res.status(StatusCodes.OK).json({
                 success : true,
-                message : "Successfully Cancel",
-                data : null
+                message : "Successfully Cancel"
             })
         })
 }
@@ -125,7 +137,7 @@ const getMySumarry = async (req, res) =>{
             if(haveOnGoingRequest){
                 return res.status(StatusCodes.OK).json({
                     success : true,
-                    message : "Successfully ",
+                    message : "success",
                     data : {
                         name : rows[0].name,
                         haveOnGoingRequest: haveOnGoingRequest,
@@ -138,7 +150,7 @@ const getMySumarry = async (req, res) =>{
             }
             return res.status(StatusCodes.OK).json({
                 success : true,
-                message : "Successfully ",
+                message : "success",
                 data : {
                     name : rows[0].name,
                     haveOnGoingRequest: haveOnGoingRequest
@@ -179,14 +191,14 @@ const getMySingleKonsultasi = async (req,res) => {
 
     await dbPool.query(q)
         .then(([rows,fields]) => {
-            if(rows.length < 0){
+            if(rows.length <= 0){
                 throw new CustomError.BadRequestError("Konsultasi tidak ditemukan");
             }
 
 
             res.status(StatusCodes.OK).json({
                 success : true,
-                message : "Success",
+                message : "success",
                 data : rows[0]
             })
         })

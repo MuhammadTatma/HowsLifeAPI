@@ -41,7 +41,6 @@ const registerPasien = async (req, res) => {
             res.status(StatusCodes.CREATED).json({
                 success: true,
                 message: "Success created",
-                data: null
             })
         })
     
@@ -106,7 +105,9 @@ const register = (role) => {
                 res.status(StatusCodes.CREATED).json({
                     success: true,
                     message: "Success created",
-                    data: null
+                    data: {
+                        userId: rows.insertId
+                    }
                 })
             })
     }

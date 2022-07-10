@@ -5,7 +5,7 @@ const CustomError = require('../errors')
 const getAllKonsultasi = async (req, res) => {
     let q = `
     SELECT 
-        k.id as "konsultasi ID",
+        k.id as "konsultasiId",
         u.name,
         DATE_FORMAT(u.tanggal_lahir,"%e %M %Y") as "tanggal lahir",
         TIMESTAMPDIFF(YEAR, u.tanggal_lahir, CURDATE()) AS age,
@@ -22,7 +22,7 @@ const getAllKonsultasi = async (req, res) => {
         success: true,
         message: "Success get all konsultasi",
         data: rows.map((iter) => {
-            const konsltasi = {...iter, link : `https://howslifeapi.herokuapp.com/api/v1/konsultasi/${iter["konsultasi ID"]}`}
+            const konsltasi = {...iter, link : `https://howslifeapi.herokuapp.com/api/v1/konsultasi/${iter["konsultasiId"]}`}
             return konsltasi
         })
     })
@@ -181,14 +181,16 @@ const getKonsultasiByID = async (req , res) => {
 
 const requestKonselor = async (req,res) => {
     const {idKonsultasi, idKonselor} = req.params
+    if(!idKonselor || !idKonsultasi){
+        throw new CustomError.BadRequestError("id konselor and id konsultasi is required")
+    }
     const q = `INSERT INTO request_konselor (id_konsultasi, id_konselor, status) VALUES (${idKonsultasi}, ${idKonselor}, "active")`
 
     await dbPool.query(q)
         .then(([rows,fields]) => {
             res.status(StatusCodes.CREATED).json({
                 success: true,
-                message: `Success make request`,
-                data: null
+                message: `success make request to konselor with id ${idKonselor}`
             })
         })
 }
