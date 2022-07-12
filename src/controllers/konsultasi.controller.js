@@ -13,6 +13,7 @@ const getAllKonsultasi = async (req, res) => {
         DATE_FORMAT(k.created, "%W, %e %M %Y  %T WIB") as created,
         k.status
     FROM konsultasi k LEFT JOIN users u on k.id_user = u.id
+    WHERE k.status = 'waiting'
     ORDER BY CASE WHEN status LIKE '%waiting' THEN 0 ELSE 1 END
     `
 
