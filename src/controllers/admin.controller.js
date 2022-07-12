@@ -172,6 +172,23 @@ const getDaftarKonselor = async (req, res) => {
         })
 }
 
+const getPasienKelamin = async (req, res) => {
+    const q = `        
+        SELECT 
+        SUM(IF(u.jenis_kelamin = 'laki-laki', 1, 0)) AS "laki",
+        SUM(IF(u.jenis_kelamin = 'perempuan', 1, 0)) AS "perempuan"
+        FROM
+        users u WHERE u.role = 2
+    `
+
+    const [rows] = await dbPool.query(q)
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: "success get pasien statistics",
+        data : rows[0]
+    })
+}
+
 module.exports = {
-    getDashboardInfo, getPasienStatistik, getKonsultasiStatistik, getDaftarPasien, getDaftarKonselor
+    getDashboardInfo, getPasienStatistik, getKonsultasiStatistik, getDaftarPasien, getDaftarKonselor, getPasienKelamin
 }
