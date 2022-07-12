@@ -20,6 +20,7 @@ const adminRouter = require('./routes/admin.route')
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 
+app.use(express.static('./src/public'));
 app.use(cors());
 app.use(express.json());
 
