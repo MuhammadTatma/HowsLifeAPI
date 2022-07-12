@@ -35,7 +35,7 @@ const getKonsultasiByID = async (req , res) => {
     WITH preference_time as (
         SELECT
             kp.id_konsultasi ,
-            GROUP_CONCAT(DATE_FORMAT(kp.time, "%W, %Y-%m-%d %H:%i:%s") SEPARATOR '$') as preferenceTime
+            GROUP_CONCAT(DATE_FORMAT(kp.time, "%W, %e-%M-%Y %H:%i:%s") SEPARATOR '$') as preferenceTime
         FROM 
             konsultasi_preferensi kp
         WHERE 
