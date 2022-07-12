@@ -202,6 +202,7 @@ const getUmurPasien = async (req, res) => {
         ) tbl
         
         GROUP BY age
+        ORDER BY age
     `
 
     const [rows] = await dbPool.query(q)
