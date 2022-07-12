@@ -189,6 +189,29 @@ const getPasienKelamin = async (req, res) => {
     })
 }
 
+const getUmurPasien = async (req, res) => {
+    const q = `        
+        SELECT
+        age,
+        COUNT(age) as jmlh
+        FROM (
+            SELECT 
+                TIMESTAMPDIFF(YEAR, u.tanggal_lahir, CURDATE()) AS age
+            FROM
+            users u WHERE u.role = 2
+        ) tbl
+        
+        GROUP BY age
+    `
+
+    const [rows] = await dbPool.query(q)
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: "success get pasien statistics",
+        data : rows
+    })
+}
+
 module.exports = {
-    getDashboardInfo, getPasienStatistik, getKonsultasiStatistik, getDaftarPasien, getDaftarKonselor, getPasienKelamin
+    getDashboardInfo, getPasienStatistik, getKonsultasiStatistik, getDaftarPasien, getDaftarKonselor, getPasienKelamin, getUmurPasien
 }
