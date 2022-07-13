@@ -133,7 +133,7 @@ const getMySumarry = async (req, res) =>{
     `
     await dbPool.query(q)
         .then(([rows,fields]) => {
-            const haveOnGoingRequest = rows[0].status !==  null
+            const haveOnGoingRequest = rows[0].status !==  null || rows[0].status !== undefined
             if(haveOnGoingRequest){
                 return res.status(StatusCodes.OK).json({
                     success : true,
